@@ -1,9 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
-# ==============================
-# Load .env File Safely
-# ==============================
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${ROOT_DIR}/.env"
 
@@ -12,49 +9,44 @@ if [[ ! -f "$ENV_FILE" ]]; then
     exit 1
 fi
 
-# Load variables safely (ignoring comments)
+# Load env variables safely
 set -o allexport
 source "$ENV_FILE"
 set +o allexport
 
-# Validate required variables
 : "${HARBOR_DOMAIN:?Missing in .env}"
 : "${HARBOR_USER:?Missing in .env}"
 : "${HARBOR_PASS:?Missing in .env}"
-: "${HARBOR_PROJECT:=mlops}"         # Default to mlops if not set
+: "${HARBOR_PROJECT:=mlops}"
 : "${HARBOR_TLS_SECRET:?Missing in .env}"
 
-# ==============================
-# 1️⃣ Verify Harbor Connectivity
-# ==============================
+# Images to push: "source_image:tag target_name semver(optional)"
+# If semver is provided, it will also be pushed under that tag for Helm
+images=(
+  "traefik:latest traefik 3.1.0"
+  "bitnami/keycloak:24.0.5 keycloak"
+  "bitnami/postgresql:16.2.0 postgresql"
+  # "bitnami/jupyterhub:4.1.5 jupyterhub"
+  # "mlrun/mlrun:1.7.0 mlrun"
+  # "apache/airflow:2.9.0 airflow"
+)
+
 echo "🔹 Checking Harbor connectivity..."
-if ! ping -c 1 "${HARBOR_DOMAIN}" >/dev/null 2>&1; then
+ping -c 1 "${HARBOR_DOMAIN}" >/dev/null || {
   echo "❌ Cannot resolve ${HARBOR_DOMAIN}. Check /etc/hosts or DNS."
   exit 1
-fi
+}
 
-# ==============================
-# 2️⃣ Install Harbor Certificate for Docker
-# ==============================
-echo "🔹 Extracting Harbor TLS certificate for Docker trust..."
+echo "🔹 Preparing Harbor cert for Docker..."
 CERTS_DIR="/etc/docker/certs.d/${HARBOR_DOMAIN}"
 sudo mkdir -p "${CERTS_DIR}"
-
 kubectl get secret "${HARBOR_TLS_SECRET}" -n harbor -o jsonpath="{.data.tls\.crt}" \
     | base64 -d | sudo tee "${CERTS_DIR}/ca.crt" >/dev/null
-
 sudo systemctl restart docker
-echo "✅ Docker now trusts Harbor at ${HARBOR_DOMAIN}"
 
-# ==============================
-# 3️⃣ Harbor Login
-# ==============================
 echo "🔹 Logging into Harbor..."
 docker login "${HARBOR_DOMAIN}" -u "${HARBOR_USER}" -p "${HARBOR_PASS}"
 
-# ==============================
-# 4️⃣ Ensure Project Exists
-# ==============================
 echo "🔹 Ensuring Harbor project '${HARBOR_PROJECT}' exists..."
 EXISTS=$(curl -sk -u "${HARBOR_USER}:${HARBOR_PASS}" \
     "https://${HARBOR_DOMAIN}/api/v2.0/projects?name=${HARBOR_PROJECT}" \
@@ -70,23 +62,12 @@ else
     echo "ℹ️ Project '${HARBOR_PROJECT}' already exists."
 fi
 
-# ==============================
-# 5️⃣ Images to Pull & Push
-# ==============================
-images=(
-  "traefik:latest traefik"
-  "bitnami/keycloak:24.0.5 keycloak"
-  "bitnami/postgresql:16.2.0 postgresql"
-  "bitnami/jupyterhub:4.1.5 jupyterhub"
-  "mlrun/mlrun:1.7.0 mlrun"
-  "apache/airflow:2.9.0 airflow"
-)
-
 > "${ROOT_DIR}/images-list.txt"
 
 for item in "${images[@]}"; do
-  src=$(echo "$item" | awk '{print $1}')
-  name=$(echo "$item" | awk '{print $2}')
+  src=$(echo "$item" | awk '{print $1}')        # e.g., traefik:latest
+  name=$(echo "$item" | awk '{print $2}')       # e.g., traefik
+  semver=$(echo "$item" | awk '{print $3}') || true
   tag=$(echo "$src" | awk -F: '{print $2}')
 
   echo "=============================="
@@ -97,8 +78,16 @@ for item in "${images[@]}"; do
   dst="${HARBOR_DOMAIN}/${HARBOR_PROJECT}/${name}:${tag}"
   docker tag "$src" "$dst"
   docker push "$dst"
-
   echo "$src -> $dst" >> "${ROOT_DIR}/images-list.txt"
+
+  # If a semver tag is defined, push that as well
+  if [[ -n "${semver:-}" ]]; then
+    semver_dst="${HARBOR_DOMAIN}/${HARBOR_PROJECT}/${name}:${semver}"
+    docker tag "$src" "$semver_dst"
+    docker push "$semver_dst"
+    echo "$src -> $semver_dst" >> "${ROOT_DIR}/images-list.txt"
+    echo "ℹ️ Semver tag pushed for Helm: ${semver_dst}"
+  fi
 done
 
 echo "✅ All images pushed successfully!"
