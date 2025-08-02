@@ -4,8 +4,7 @@ expose:
     enabled: true
     secretName: harbor-tls
 
-externalURL: https://harbor.local
-
+externalURL: https://core.harbor.domain
 harborAdminPassword: Harbor12345
 
 persistence:
