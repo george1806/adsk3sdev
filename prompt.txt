@@ -1,0 +1,191 @@
+Prompt for AI Tool (Offline-First MLOps Environment)
+I want you to create a production-ready, fully automated MLOps environment for K3s on Ubuntu, emulating an offline air-gapped server setup for data scientists.
+
+Applications to Deploy
+Harbor
+
+Acts as the private image registry.
+
+Supports self-signed HTTPS.
+
+Will host all Docker images for offline installation.
+
+Traefik
+
+Ingress controller and load balancer with dashboard.
+
+Routes traffic to all applications.
+
+DNS and SSL self-signed certs must be auto-configured for:
+
+lua
+Copy
+Edit
+harbor.local
+keycloak.local
+jupyterhub.local
+mlrun.local
+airflow.local
+traefik.local
+Keycloak
+
+Authentication provider for:
+
+JupyterHub
+
+MLRun
+
+Airflow
+
+Automatically configure realms, roles, and OIDC clients.
+
+JupyterHub
+
+Multi-user environment for data scientists.
+
+Integrated with Keycloak (OIDC).
+
+Scalable via multiple user pods.
+
+MLRun
+
+ML orchestration platform.
+
+Integrated with Keycloak and JupyterHub.
+
+Must pull images from Harbor only.
+
+Airflow
+
+Data orchestration tool.
+
+Integrated with Keycloak OIDC authentication.
+
+Must pull images from Harbor only.
+
+Deployment Requirements
+Phase 1: Harbor Setup
+Install Harbor using a Helm chart with harbor-values.yaml.
+
+Generate self-signed certificates and configure Harbor.
+
+Configure /etc/hosts for harbor.local.
+
+Provide a bash script:
+
+Pull all required Docker images from their public registries.
+
+Tag and push them to Harbor (example: harbor.local/mlops/keycloak:latest).
+
+Maintain an images-list.txt file for reproducibility.
+
+All subsequent Helm values.yaml must use Harbor image URLs.
+
+Phase 2: Traefik Setup
+Deploy Traefik with traefik-values.yaml via Helm.
+
+Enable:
+
+Dashboard (traefik.local).
+
+TLS termination using self-signed certs.
+
+HTTP → HTTPS redirection.
+
+Configure DNS entries in /etc/hosts automatically via script.
+
+Phase 3: Keycloak Setup
+Deploy Keycloak from Harbor images.
+
+Configure:
+
+Database (can use Bitnami Postgres from Harbor).
+
+Realm: mlops-realm
+
+Clients: jupyterhub-client, mlrun-client, airflow-client
+
+Output OIDC credentials for other apps to consume automatically.
+
+Phase 4: JupyterHub Setup
+Deploy JupyterHub from Harbor images using jupyterhub-values.yaml.
+
+Configure Keycloak OIDC for login.
+
+Enable auto-scaling for user pods.
+
+Phase 5: MLRun Setup
+Deploy MLRun using Harbor images and mlrun-values.yaml.
+
+Integrate with:
+
+Keycloak for auth
+
+JupyterHub for UI launch
+
+Phase 6: Airflow Setup
+Deploy Airflow using Harbor images.
+
+Integrate Keycloak OIDC for login.
+
+Enable Traefik ingress at airflow.local.
+
+Automation & Scripts Required
+scripts/
+
+css
+Copy
+Edit
+01_install_harbor.sh
+02_push_images_to_harbor.sh   <-- Pull online & push to Harbor
+03_install_traefik.sh
+04_install_keycloak.sh
+05_install_jupyterhub.sh
+06_install_mlrun.sh
+07_install_airflow.sh
+values/ directory containing Helm values.yaml for each app.
+
+images-list.txt listing all required images with their source and Harbor target tags.
+
+README.md explaining:
+
+How to run each phase.
+
+How to prepare offline deployment.
+
+How to verify access to each app.
+
+Special Requirements
+Offline-first workflow:
+
+No app should pull images from the internet after Phase 1.
+
+All values.yaml should point to harbor.local/<namespace>/<image>:<tag>.
+
+Scalability:
+
+Enable replica configuration in values.yaml.
+
+Include resource requests and limits.
+
+Visual Access:
+
+Traefik dashboard should provide clickable links to all apps.
+
+Expected Output from AI
+All bash scripts for phased installation.
+
+All Helm values.yaml files pointing to Harbor images.
+
+A script to pre-download and push all images to Harbor.
+
+Offline installation-ready folder like:
+
+arduino
+Copy
+Edit
+mlops-setup/
+  scripts/
+  values/
+  images-list.txt
+  README.md

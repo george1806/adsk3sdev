@@ -1,0 +1,16 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    secretName: harbor-tls
+
+externalURL: https://harbor.local
+
+harborAdminPassword: Harbor12345
+
+persistence:
+  enabled: false # For local testing
+
+portal:
+  service:
+    type: ClusterIP
