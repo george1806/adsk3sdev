@@ -9,6 +9,10 @@ image:
   repository: mlops-images/keycloak
   tag: 24.0.5
   pullPolicy: IfNotPresent
+auth:
+  adminUser: admin
+  adminPassword: admin123
+  enableAdminConsole: true
 
 production: true
 proxy: "edge"
@@ -20,6 +24,12 @@ cache:
 extraEnvVars:
   - name: KC_CACHE_STACK
     value: "kubernetes"
+  - name: KC_HOSTNAME
+    value: "keycloak.core.harbor.domain"
+  - name: KC_HOSTNAME_STRICT
+    value: "false"
+  - name: KC_PROXY
+    value: "edge"
 
 resources:
   requests:
