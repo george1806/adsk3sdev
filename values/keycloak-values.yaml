@@ -1,0 +1,62 @@
+global:
+  imageRegistry: core.harbor.domain
+  imagePullSecrets: []
+  security:
+    allowInsecureImages: true
+
+image:
+  registry: core.harbor.domain
+  repository: mlops-images/keycloak
+  tag: 24.0.5
+  pullPolicy: IfNotPresent
+
+production: true
+proxy: "edge"
+replicaCount: 2
+
+cache:
+  enabled: true
+
+extraEnvVars:
+  - name: KC_CACHE_STACK
+    value: "kubernetes"
+
+resources:
+  requests:
+    memory: 1Gi
+    cpu: 500m
+  limits:
+    memory: 2Gi
+    cpu: 1
+
+ingress:
+  enabled: true
+  ingressClassName: "traefik"
+  hostname: "keycloak.core.harbor.domain"
+  path: "/*"
+  pathType: ImplementationSpecific
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  tls: false
+  extraTls:
+    - hosts:
+        - "keycloak.core.harbor.domain"
+      secretName: "harbor-ingress"
+
+postgresql:
+  enabled: true
+  auth:
+    username: keycloak
+    password: KeycloakP@ss123
+    database: keycloak
+  image:
+    registry: core.harbor.domain
+    repository: mlops-images/postgresql
+    tag: 16.2.0
+    pullPolicy: IfNotPresent
+  primary:
+    persistence:
+      enabled: true
+      size: 8Gi
