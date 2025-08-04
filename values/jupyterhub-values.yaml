@@ -1,0 +1,69 @@
+global:
+  imageRegistry: "" # Offline later: core.harbor.domain/mlops-images
+  imagePullSecrets: []
+  security:
+    allowInsecureImages: true
+
+#####################################
+# Hub configuration
+#####################################
+hub:
+  image:
+    name: jupyterhub/k8s-hub # Offline: mlops-images/jupyterhub-hub
+    tag: 4.0.0
+    pullPolicy: IfNotPresent
+
+  # Use SQLite with a persistent volume
+  db:
+    type: sqlite-pvc
+    pvc:
+      storageClassName: "local-path" # Default storage class for K3s
+      accessModes: [ReadWriteOnce]
+      storage: 2Gi
+
+  # Only cookie key for now; OIDC (Keycloak) commented
+  extraEnv:
+    JUPYTERHUB_CRYPT_KEY: "supersecretkey123"
+    # OAUTH2_AUTHORIZE_URL: ...
+    # OAUTH2_TOKEN_URL: ...
+    # OAUTH2_USERDATA_URL: ...
+    # OAUTH2_CLIENT_ID: ...
+    # OAUTH2_CLIENT_SECRET: ...
+    # OAUTH_CALLBACK_URL: ...
+
+proxy:
+  chp:
+    image:
+      name: jupyterhub/configurable-http-proxy # Offline: mlops-images/configurable-http-proxy
+      tag: 4.6.1
+      pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+
+singleuser:
+  image:
+    name: jupyter/minimal-notebook # Offline: mlops-images/jupyter-minimal-notebook
+    tag: latest
+    pullPolicy: IfNotPresent
+  memory:
+    guarantee: 512M
+    limit: 2G
+  cpu:
+    guarantee: 0.5
+    limit: 1
+  storage:
+    type: dynamic
+    capacity: 5Gi
+
+#####################################
+# Traefik ingress
+#####################################
+ingress:
+  enabled: true
+  ingressClassName: "traefik"
+  hosts:
+    - jupyterhub.core.harbor.domain
+  tls:
+    - secretName: harbor-ingress
+      hosts:
+        - jupyterhub.core.harbor.domain
