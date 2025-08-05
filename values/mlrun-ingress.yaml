@@ -1,0 +1,229 @@
+# =============================
+# 🔹 MLRun Ingress Bundle
+# Namespace: mlrun
+# Domains:
+#   mlrun.core.harbor.domain         -> MLRun UI
+#   api.mlrun.core.harbor.domain     -> MLRun API
+#   jupyter.mlrun.core.harbor.domain -> Jupyter
+#   minio.mlrun.core.harbor.domain   -> MinIO API
+#   minio-console.mlrun.core.harbor.domain -> MinIO Console
+#   grafana.mlrun.core.harbor.domain -> Grafana
+#   prometheus.mlrun.core.harbor.domain -> Prometheus
+#   nuclio.mlrun.core.harbor.domain  -> Nuclio Dashboard
+# =============================
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlrun-ui
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlrun-ui
+                port:
+                  number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlrun-api
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - api.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: api.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlrun-api
+                port:
+                  number: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jupyter
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - jupyter.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: jupyter.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlrun-jupyter
+                port:
+                  number: 8888
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - minio.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: minio.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio
+                port:
+                  number: 9000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-console
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - minio-console.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: minio-console.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-console
+                port:
+                  number: 9001
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - grafana.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: grafana.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - prometheus.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: prometheus.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-prometheus
+                port:
+                  number: 9090
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nuclio
+  namespace: mlrun
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  tls:
+    - hosts:
+        - nuclio.mlrun.core.harbor.domain
+      secretName: harbor-ingress
+  rules:
+    - host: nuclio.mlrun.core.harbor.domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nuclio-dashboard
+                port:
+                  number: 8070
