@@ -1,0 +1,103 @@
+global:
+  imageRegistry: ""
+  storageClass: local-path
+  tlsSecretName: harbor-ingress
+
+mlrun:
+  ui:
+    enabled: true
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - mlrun.core.harbor.domain
+          secretName: harbor-ingress
+
+  api:
+    replicas: 2
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - mlrun.core.harbor.domain
+          secretName: harbor-ingress
+
+  jupyter:
+    enabled: true
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: jupyter.mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - jupyter.mlrun.core.harbor.domain
+          secretName: harbor-ingress
+
+  minio:
+    enabled: true
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: minio.mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - minio.mlrun.core.harbor.domain
+          secretName: harbor-ingress
+
+  grafana:
+    enabled: true
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: grafana.mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - grafana.mlrun.core.harbor.domain
+          secretName: harbor-ingress
+
+  prometheus:
+    enabled: true
+    ingress:
+      enabled: true
+      className: "traefik"
+      hosts:
+        - host: prometheus.mlrun.core.harbor.domain
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - prometheus.mlrun.core.harbor.domain
+          secretName: harbor-ingress
+# ---------------------------------
+# Keycloak Integration (Optional)
+# ---------------------------------
+#auth:
+#  enabled: true
+#  oidcIssuer: "https://keycloak.core.harbor.domain/realms/mlrun"
+#  clientId: "mlrun"
+#  clientSecret: "CHANGE_ME"
