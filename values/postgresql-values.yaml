@@ -1,0 +1,29 @@
+global:
+  imageRegistry: "" #core.harbor.domain/mlops-images # offline-ready
+  imagePullSecrets: []
+  security:
+    allowInsecureImages: true
+
+auth:
+  username: admin
+  password: AdminP@ss123
+  database: defaultdb # Default DB created automatically
+
+image:
+  repository: core.harbor.domain/mlops-images/postgresql
+  tag: 16.2.0
+  pullPolicy: IfNotPresent
+
+primary:
+  persistence:
+    enabled: true
+    size: 10Gi
+
+  # Optional: Create additional databases
+  initdb:
+    scripts:
+      create-dbs.sql: |
+        -- Default database
+        CREATE DATABASE keycloakdb;
+        CREATE DATABASE jupyterdb;
+        CREATE DATABASE mlrundb;
