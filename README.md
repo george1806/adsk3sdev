@@ -24,8 +24,8 @@ Place the following in `.env` file:
 ```env
 HARBOR_DOMAIN=core.harbor.domain
 HARBOR_PROJECT=mlops-images
-HARBOR_USER=admin
-HARBOR_PASS=Harbor12345
+HARBOR_USER=
+HARBOR_PASS=
 MLRUN_VERSION=0.9.0
 INSTALL_MODE=local   # Options: local | harbor
 ```
@@ -104,40 +104,12 @@ Example `/etc/hosts`:
 -   Supports `local` and `harbor` mode
 -   Uses Helm to deploy from `charts/mlrun-ce`
 
-### ✅ `09-install-spark.sh`
-
-Installs Apache Spark via Helm:
-
-```bash
-./scripts/09-install-spark.sh
-```
-
-Ingress exposed: `https://spark.mlrun.core.harbor.domain`
-
-### ✅ `10-install-trino.sh`
-
-Installs Trino via Helm:
-
-```bash
-./scripts/10-install-trino.sh
-```
-
-## Ingress exposed: `https://trino.mlrun.core.harbor.domain`
-
 ## ⚠️ Warnings & Notes
 
 -   Use `networking.k8s.io/v1` for `Ingress` in K3s
 -   Replace deprecated `kubernetes.io/ingress.class` with `ingressClassName`
 -   Ingress `404` means service is running but path or port is wrong — check `svc` and correct ingress `path`
 -   Traefik must be configured to recognize custom ingress class if you renamed it
-
----
-
-## 🔜 Next Steps
-
--   Add Keycloak auth integration (already scaffolded)
--   Add health-check & service validation script
--   Add user-friendly UI installer (optional)
 
 ---
 
