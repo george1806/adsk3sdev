@@ -3,11 +3,15 @@
 This guide documents all the steps, scripts, and commands required to install a comprehensive MLRun CE environment on an offline K3s Kubernetes cluster using images saved from Harbor or locally. The setup includes monitoring, notebook, object storage, streaming, and orchestration tools.
 
 📁 Project Structure
-mlopsDev/adsk3dev/
+
 ├── charts/ # Contains mlrun-ce Helm charts
+
 ├── offline-images/ # Pulled and saved Docker images
+
 ├── scripts/ # Bash automation scripts
+
 ├── values/ # Custom values and ingress configurations
+
 ├── .env # Environment configuration
 
 📋 .env File (Required)
@@ -32,7 +36,7 @@ This script performs:
 
 2️⃣ [Optional] Push to Harbor[Enable the push function in the script when ready:]
 
-# `sh ./scripts/07-prepare-mlrun-images.sh`
+`sh ./scripts/07-prepare-mlrun-images.sh`
 
 It will:
 
